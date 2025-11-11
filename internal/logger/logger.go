@@ -2,6 +2,7 @@ package logger
 
 import (
 	"io"
+	defLog "log"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -67,23 +68,25 @@ func (l *Logger) MustClose() {
 
 func mustPrepareLogsDir() {
 	if err := os.MkdirAll(logsDir, 0755); err != nil {
-		panic(MsgCantCreateLogsDir)
+		defLog.Fatal(MsgCantCreateLogsDir)
 	}
 }
 
 func mustOpenLogsFile() *os.File {
-	logFileName := time.Now().Format("15-04-05_02-01-2006") + ".log"
-
-	logFilePath := filepath.Join(logsDir, logFileName)
-
 	logFile, err := os.OpenFile(
-		logFilePath,
+		logsFilepath(),
 		os.O_CREATE|os.O_WRONLY|os.O_APPEND,
-		0666,
+		0644,
 	)
 	if err != nil {
-		panic(MsgCantOpenLogsFile)
+		defLog.Fatal(MsgCantOpenLogsFile)
 	}
 
 	return logFile
+}
+
+func logsFilepath() string {
+	logFileName := time.Now().Format("15-04-05_02-01-2006") + ".log"
+
+	return filepath.Join(logsDir, logFileName)
 }
