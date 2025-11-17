@@ -41,6 +41,13 @@ var downloadCmd = &cobra.Command{
 		fmt.Println("Type:", info.ContentType)
 		fmt.Println("Accept ranges:", info.AcceptRanges)
 
+		chunks := downloader.SplitIntoChunks(info.Size, threads)
+
+		fmt.Println("Chunks:")
+		for _, ch := range chunks {
+			fmt.Printf("\t#%d: %d - %d\n", ch.Index, ch.Start, ch.End)
+		}
+
 		fmt.Println("Downloading started...")
 
 		if err := downloader.DownloadSimple(url, outputPath); err != nil {
