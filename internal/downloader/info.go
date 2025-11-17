@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// FileInfo contains information about a file.
 type FileInfo struct {
 	URL          string
 	Size         int64
