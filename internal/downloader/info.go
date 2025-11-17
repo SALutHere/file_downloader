@@ -9,7 +9,7 @@ import (
 
 type FileInfo struct {
 	URL          string
-	Size         int
+	Size         int64
 	AcceptRanges bool
 	ContentType  string
 }
@@ -49,7 +49,7 @@ func parseInfoFromHeaders(url string, resp *http.Response) (*FileInfo, error) {
 	}
 
 	if cl := resp.Header.Get("Content-Length"); cl != "" {
-		size, err := strconv.Atoi(cl)
+		size, err := strconv.ParseInt(cl, 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf("Content-Length read error: %w", err)
 		}
@@ -71,7 +71,7 @@ func parseInfoFromRange(url string, resp *http.Response) (*FileInfo, error) {
 		return nil, fmt.Errorf("incorrect Content-Range: %s", cr)
 	}
 
-	size, err := strconv.Atoi(parts[1])
+	size, err := strconv.ParseInt(parts[1], 10, 64)
 	if err != nil {
 		return nil, fmt.Errorf("error extracting file size: %w", err)
 	}
