@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/SALutHere/file_downloader/internal/downloader"
 	"github.com/spf13/cobra"
 )
 
@@ -26,10 +27,17 @@ var downloadCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		url := args[0]
 
-		fmt.Println("URL:", url)
-		fmt.Println("Output:", outputPath)
-		fmt.Println("Threads:", threads)
-		fmt.Println("Resume:", resume)
+		if outputPath == "" {
+			return errors.New("you must specify the save path via --output")
+		}
+
+		fmt.Println("Downloading started...")
+
+		if err := downloader.DownloadSimple(url, outputPath); err != nil {
+			return err
+		}
+
+		fmt.Println("The file has been successfully downloaded.")
 
 		return nil
 	},
