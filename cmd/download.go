@@ -31,6 +31,16 @@ var downloadCmd = &cobra.Command{
 			return errors.New("you must specify the save path via --output")
 		}
 
+		info, err := downloader.GetRemoteFileInfo(url)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println("File info:")
+		fmt.Println("Size:", info.Size)
+		fmt.Println("Type:", info.ContentType)
+		fmt.Println("Accept ranges:", info.AcceptRanges)
+
 		fmt.Println("Downloading started...")
 
 		if err := downloader.DownloadSimple(url, outputPath); err != nil {
