@@ -7,7 +7,7 @@ import (
 )
 
 // DownloadChunksConcurrently downloads chunks using goroutines
-func DownloadChunksConcurrently(url string, chunks []Chunk, file io.WriterAt) error {
+func DownloadChunksConcurrently(url string, chunks []Chunk, file io.WriterAt, state *State) error {
 	var wg sync.WaitGroup
 
 	errCh := make(chan error, len(chunks))
@@ -20,6 +20,14 @@ func DownloadChunksConcurrently(url string, chunks []Chunk, file io.WriterAt) er
 
 			if err := DownloadChunkWithRetry(url, ch, file); err != nil {
 				errCh <- fmt.Errorf("error in downloading chunk #%d: %w", ch.Index, err)
+				return
+			}
+
+			state.Chunks[ch.Index].Done = true
+
+			if err := state.Save(); err != nil {
+				errCh <- fmt.Errorf("error in saving state: %w", err)
+				return
 			}
 		}(ch)
 	}

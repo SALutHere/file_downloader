@@ -49,6 +49,26 @@ var downloadCmd = &cobra.Command{
 			fmt.Printf("\t#%d: %d - %d\n", ch.Index, ch.Start, ch.End)
 		}
 
+		state := &downloader.State{
+			URL:    url,
+			Output: outputPath,
+			Size:   info.Size,
+			Chunks: make([]downloader.ChunkState, len(chunks)),
+		}
+
+		for i, ch := range chunks {
+			state.Chunks[i] = downloader.ChunkState{
+				Index: ch.Index,
+				Start: ch.Start,
+				End:   ch.End,
+				Done:  false,
+			}
+		}
+
+		if err := state.Save(); err != nil {
+			return fmt.Errorf("error saving state-file: %w", err)
+		}
+
 		fmt.Println("Downloading started...")
 
 		//if err := downloader.DownloadSimple(url, outputPath); err != nil {
@@ -77,7 +97,7 @@ var downloadCmd = &cobra.Command{
 
 		fmt.Println("Concurrent chunk downloading started...")
 
-		if err := downloader.DownloadChunksConcurrently(url, chunks, out); err != nil {
+		if err := downloader.DownloadChunksConcurrently(url, chunks, out, state); err != nil {
 			return err
 		}
 
