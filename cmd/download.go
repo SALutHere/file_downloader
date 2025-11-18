@@ -49,25 +49,54 @@ var downloadCmd = &cobra.Command{
 			fmt.Printf("\t#%d: %d - %d\n", ch.Index, ch.Start, ch.End)
 		}
 
-		state := &downloader.State{
-			URL:    url,
-			Output: outputPath,
-			Size:   info.Size,
-			Chunks: make([]downloader.ChunkState, len(chunks)),
-		}
+		var state *downloader.State
 
-		for i, ch := range chunks {
-			state.Chunks[i] = downloader.ChunkState{
-				Index: ch.Index,
-				Start: ch.Start,
-				End:   ch.End,
-				Done:  false,
+		if resume {
+			st, err := downloader.LoadState(outputPath)
+			if err != nil {
+				return fmt.Errorf("failed to load state: %w", err)
+			}
+
+			if st.URL != url {
+				return fmt.Errorf("state URL does not match")
+			}
+			if st.Size != info.Size {
+				return fmt.Errorf("state size does not match file size on server")
+			}
+
+			fmt.Println("Resume mode: continuing unfinished download...")
+			state = st
+		} else {
+			state = &downloader.State{
+				URL:    url,
+				Output: outputPath,
+				Size:   info.Size,
+				Chunks: make([]downloader.ChunkState, len(chunks)),
+			}
+
+			for i, ch := range chunks {
+				state.Chunks[i] = downloader.ChunkState{
+					Index: ch.Index,
+					Start: ch.Start,
+					End:   ch.End,
+					Done:  false,
+				}
+			}
+
+			if err := state.Save(); err != nil {
+				return fmt.Errorf("failed to safve state: %w", err)
 			}
 		}
 
-		if err := state.Save(); err != nil {
-			return fmt.Errorf("error saving state-file: %w", err)
+		toDownload := make([]downloader.Chunk, 0)
+
+		for i, ch := range chunks {
+			if !state.Chunks[i].Done {
+				toDownload = append(toDownload, ch)
+			}
 		}
+
+		fmt.Printf("Chunks to download: %d\n", len(toDownload))
 
 		fmt.Println("Downloading started...")
 
@@ -75,7 +104,13 @@ var downloadCmd = &cobra.Command{
 		//	return err
 		//}
 
-		out, err := os.Create(outputPath)
+		//out, err := os.Create(outputPath)
+		//if err != nil {
+		//	return err
+		//}
+		//defer out.Close()
+
+		out, err := os.OpenFile(outputPath, os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			return err
 		}
@@ -97,7 +132,7 @@ var downloadCmd = &cobra.Command{
 
 		fmt.Println("Concurrent chunk downloading started...")
 
-		if err := downloader.DownloadChunksConcurrently(url, chunks, out, state); err != nil {
+		if err := downloader.DownloadChunksConcurrently(url, toDownload, out, state); err != nil {
 			return err
 		}
 
