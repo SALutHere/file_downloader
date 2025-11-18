@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 )
 
-func DownloadChunk(url string, ch Chunk, file *os.File) error {
+func DownloadChunk(url string, ch Chunk, file io.WriterAt) error {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return fmt.Errorf("error creating request: %w", err)
