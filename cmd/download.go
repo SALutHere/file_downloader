@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/SALutHere/file_downloader/internal/downloader"
 	"github.com/spf13/cobra"
@@ -50,8 +51,28 @@ var downloadCmd = &cobra.Command{
 
 		fmt.Println("Downloading started...")
 
-		if err := downloader.DownloadSimple(url, outputPath); err != nil {
+		//if err := downloader.DownloadSimple(url, outputPath); err != nil {
+		//	return err
+		//}
+
+		out, err := os.Create(outputPath)
+		if err != nil {
 			return err
+		}
+		defer out.Close()
+
+		if err := out.Truncate(info.Size); err != nil {
+			return err
+		}
+
+		fmt.Println("Sequential chunk downloading started (test)...")
+
+		for _, ch := range chunks {
+			fmt.Printf("Downloading chunk #%d (%d-%d)\n", ch.Index, ch.Start, ch.End)
+
+			if err := downloader.DownloadChunk(url, ch, out); err != nil {
+				return err
+			}
 		}
 
 		fmt.Println("The file has been successfully downloaded.")
