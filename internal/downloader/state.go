@@ -4,14 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sync"
 )
 
 // ChunkState stores the state of the single chunk
 type ChunkState struct {
-	Index int   `json:"index"`
-	Start int64 `json:"start"`
-	End   int64 `json:"end"`
-	Done  bool  `json:"done"`
+	Index      int   `json:"index"`
+	Start      int64 `json:"start"`
+	End        int64 `json:"end"`
+	Downloaded int64 `json:"downloaded"`
+	Done       bool  `json:"done"`
 }
 
 // State stores information about the file downloading
@@ -20,10 +22,15 @@ type State struct {
 	Output string       `json:"output"`
 	Size   int64        `json:"size"`
 	Chunks []ChunkState `json:"chunks"`
+
+	mu sync.Mutex `json:"-"`
 }
 
 // Save saves the state to a JSON file (atomically)
 func (s *State) Save() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	
 	tmp := StateFileName(s.Output) + ".tmp"
 
 	data, err := json.MarshalIndent(s, "", "  ")

@@ -14,11 +14,17 @@ const (
 // DownloadChunkWithRetry downloads a single range of bytes and writes it to a file.
 // It is like DownloadChunk, but it retries till the maxRetries and uses exponential delay
 // between attempts.
-func DownloadChunkWithRetry(url string, ch Chunk, file io.WriterAt) error {
+func DownloadChunkWithRetry(
+	url string,
+	ch Chunk,
+	file io.WriterAt,
+	state *State,
+	progress chan<- ChunkProgress,
+) error {
 	var err error
 
 	for att := range maxRetries {
-		err = DownloadChunk(url, ch, file)
+		err = DownloadChunk(url, ch, file, state, progress)
 		if err == nil {
 			return nil
 		}

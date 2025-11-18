@@ -76,10 +76,11 @@ var downloadCmd = &cobra.Command{
 
 			for i, ch := range chunks {
 				state.Chunks[i] = downloader.ChunkState{
-					Index: ch.Index,
-					Start: ch.Start,
-					End:   ch.End,
-					Done:  false,
+					Index:      ch.Index,
+					Start:      ch.Start,
+					End:        ch.End,
+					Downloaded: 0,
+					Done:       false,
 				}
 			}
 
@@ -112,7 +113,7 @@ var downloadCmd = &cobra.Command{
 
 		fmt.Println("Concurrent chunk downloading started...")
 
-		if err := downloader.DownloadChunksConcurrently(url, toDownload, out, state); err != nil {
+		if err := downloader.DownloadChunksConcurrently(url, toDownload, out, state, nil); err != nil {
 			return err
 		}
 
