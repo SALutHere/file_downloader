@@ -65,14 +65,20 @@ var downloadCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Println("Sequential chunk downloading started (test)...")
+		//fmt.Println("Sequential chunk downloading started (test)...")
+		//
+		//for _, ch := range chunks {
+		//	fmt.Printf("Downloading chunk #%d (%d-%d)\n", ch.Index, ch.Start, ch.End)
+		//
+		//	if err := downloader.DownloadChunk(url, ch, out); err != nil {
+		//		return err
+		//	}
+		//}
 
-		for _, ch := range chunks {
-			fmt.Printf("Downloading chunk #%d (%d-%d)\n", ch.Index, ch.Start, ch.End)
+		fmt.Println("Concurrent chunk downloading started...")
 
-			if err := downloader.DownloadChunk(url, ch, out); err != nil {
-				return err
-			}
+		if err := downloader.DownloadChunksConcurrently(url, chunks, out); err != nil {
+			return err
 		}
 
 		fmt.Println("The file has been successfully downloaded.")
