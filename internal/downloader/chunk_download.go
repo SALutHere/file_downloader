@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// DownloadChunk downloads a single range of bytes and writes it to a file.
 func DownloadChunk(url string, ch Chunk, file io.WriterAt) error {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {

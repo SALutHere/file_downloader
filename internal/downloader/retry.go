@@ -11,6 +11,9 @@ const (
 	baseRetryDelay = time.Second
 )
 
+// DownloadChunkWithRetry downloads a single range of bytes and writes it to a file.
+// It is like DownloadChunk, but it retries till the maxRetries and uses exponential delay
+// between attempts.
 func DownloadChunkWithRetry(url string, ch Chunk, file io.WriterAt) error {
 	var err error
 
