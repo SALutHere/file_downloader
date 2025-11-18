@@ -100,16 +100,6 @@ var downloadCmd = &cobra.Command{
 
 		fmt.Println("Downloading started...")
 
-		//if err := downloader.DownloadSimple(url, outputPath); err != nil {
-		//	return err
-		//}
-
-		//out, err := os.Create(outputPath)
-		//if err != nil {
-		//	return err
-		//}
-		//defer out.Close()
-
 		out, err := os.OpenFile(outputPath, os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			return err
@@ -119,16 +109,6 @@ var downloadCmd = &cobra.Command{
 		if err := out.Truncate(info.Size); err != nil {
 			return err
 		}
-
-		//fmt.Println("Sequential chunk downloading started (test)...")
-		//
-		//for _, ch := range chunks {
-		//	fmt.Printf("Downloading chunk #%d (%d-%d)\n", ch.Index, ch.Start, ch.End)
-		//
-		//	if err := downloader.DownloadChunk(url, ch, out); err != nil {
-		//		return err
-		//	}
-		//}
 
 		fmt.Println("Concurrent chunk downloading started...")
 
