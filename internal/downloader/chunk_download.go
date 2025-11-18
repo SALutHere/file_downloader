@@ -4,15 +4,17 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/SALutHere/file_downloader/internal/progress"
 )
 
 const bufferSize = 64 * 1024 // 64 KB
 
-type ChunkProgress struct {
-	Index      int
-	Downloaded int64
-	Total      int64
-}
+//type ChunkProgress struct {
+//	Index      int
+//	Downloaded int64
+//	Total      int64
+//}
 
 // DownloadChunk downloads (and resumes) a chunk.
 // Uses incremental writes and updates chunk progress.
@@ -21,7 +23,7 @@ func DownloadChunk(
 	ch Chunk,
 	file io.WriterAt,
 	state *State,
-	progress chan<- ChunkProgress,
+	progr chan<- progress.ChunkProgress,
 ) error {
 	st := &state.Chunks[ch.Index]
 
@@ -76,8 +78,8 @@ func DownloadChunk(
 				return fmt.Errorf("error saving state: %w", err)
 			}
 
-			if progress != nil {
-				progress <- ChunkProgress{
+			if progr != nil {
+				progr <- progress.ChunkProgress{
 					Index:      ch.Index,
 					Downloaded: st.Downloaded,
 					Total:      totalSize,

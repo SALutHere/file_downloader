@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/SALutHere/file_downloader/internal/downloader"
+	"github.com/SALutHere/file_downloader/internal/progress"
 	"github.com/spf13/cobra"
 )
 
@@ -111,12 +113,20 @@ var downloadCmd = &cobra.Command{
 			return err
 		}
 
+		progressChan := make(chan progress.ChunkProgress, 100)
+
+		renderer := progress.NewRenderer(len(toDownload))
+		go renderer.Run(progressChan)
+
 		fmt.Println("Concurrent chunk downloading started...")
 
-		if err := downloader.DownloadChunksConcurrently(url, toDownload, out, state, nil); err != nil {
+		if err := downloader.DownloadChunksConcurrently(url, toDownload, out, state, progressChan); err != nil {
+			close(progressChan)
 			return err
 		}
 
+		time.Sleep(100 * time.Millisecond)
+		close(progressChan)
 		fmt.Println("The file has been successfully downloaded.")
 
 		return nil

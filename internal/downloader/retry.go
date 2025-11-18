@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"time"
+
+	"github.com/SALutHere/file_downloader/internal/progress"
 )
 
 const (
@@ -19,11 +21,11 @@ func DownloadChunkWithRetry(
 	ch Chunk,
 	file io.WriterAt,
 	state *State,
-	progress chan<- ChunkProgress,
+	progress chan<- progress.ChunkProgress,
 ) error {
 	var err error
 
-	for att := range maxRetries {
+	for att := 1; att <= maxRetries; att++ {
 		err = DownloadChunk(url, ch, file, state, progress)
 		if err == nil {
 			return nil
